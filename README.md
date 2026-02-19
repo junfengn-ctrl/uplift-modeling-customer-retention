@@ -19,19 +19,25 @@ Using a simulated Randomized Controlled Trial (RCT) framework, I implemented bot
 The model identifies the optimal targeting threshold. By targeting the top **59%** of users based on Uplift Score, we maximize expected profit to **~$10k** (per 7k users), avoiding waste on users who would stay anyway or leave regardless of the offer.
 ![Profit Curve](images/profit_curve.png)
 
-### 2. Model Interpretability: SHAP Analysis
+### 2. Strategic Resource Allocation: Incremental Retention
+Beyond profit, we analyze the volume of saved customers relative to targeting coverage. 
+![Incremental Retention](images/incremental_retention.png) 
+* **High Efficiency**: Targeting the top 20% of users captures nearly 70 incremental retentions.
+* **Decision Support**: Helps stakeholders decide on thresholds based on available marketing budget.
+
+### 3. Model Interpretability: SHAP Analysis
 Using SHAP values to interpret the CATE (Conditional Average Treatment Effect), we discovered that **Month-to-month contract** users with high tenure are the most responsive segment. This confirms our hypothesis that long-term users on flexible contracts are the most "Persuadable."
 ![SHAP Summary](images/shap_summary.png)
 
-### 3. Model Performance: Qini Curve
+### 4. Model Performance: Qini Curve
 The X-Learner (Pink line) significantly outperforms the T-Learner (Baseline) and Random selection. The Area Under Uplift Curve (AUUC) is **0.68**, indicating strong ranking ability.
 ![Qini Curve](images/qini_curve.png)
 
-### 4. Model Reliability: Calibration Plot
+### 5. Model Reliability: Calibration Plot
 The model is well-calibrated. Users predicted to have high uplift (Decile 1) actually showed the highest true uplift in the validation set, proving the model's reliability for real-world deployment.
 ![Calibration Plot](images/calibration_plot.png)
 
-### 5. Data Context: Churn by Contract
+### 6. Data Context: Churn by Contract
 EDA reveals that Month-to-month users have a significantly higher baseline churn rate, making them the primary target pool for retention experiments.
 ![Churn EDA](images/churn_by_contract.png)
 
