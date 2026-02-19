@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import shap
 from sklearn.base import BaseEstimator, RegressorMixin
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import auc
@@ -80,8 +81,21 @@ def load_and_simulate_data(file_path):
 
     return df
 
+def load_and_simulate_data(filename="WA_Fn-UseC_-Telco-Customer-Churn.csv"):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    file_path = os.path.join(current_dir, "..", "data", filename)
+    
+    print(f"Loading data from: {os.path.abspath(file_path)}")
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Data file not found！")
 
-df = load_and_simulate_data("WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    df = pd.read_csv(file_path)
+    
+    return df
+
+df = load_and_simulate_data()
 
 # ============================================================
 # EDA: Exploratory Data Analysis
@@ -556,4 +570,5 @@ def plot_profit_curve(uplift_scores, y_true, t_true,
 
 # Run Profit Analysis
 plot_profit_curve(uplift_x, y_test, t_test, value_per_retain=60, cost_per_treat=5)
+
 
