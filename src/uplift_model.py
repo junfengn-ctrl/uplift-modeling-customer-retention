@@ -123,7 +123,7 @@ def run_eda(df):
     missing = df.isnull().sum().sort_values(ascending=False)
     print(missing[missing > 0] if missing.sum() > 0 else "No missing values.")
 
-    # ---------------------------Yw
+    # ---------------------------
     # d. Churn Distribution (Pie Chart)
     # ---------------------------
     churn_counts = df["Churn"].value_counts()
@@ -155,31 +155,27 @@ def run_eda(df):
     # ---------------------------
     # f. Churn Rate by Key Categorical Features
     # ---------------------------
-    # --- Matplotlib 版本：放大 + 调整底部边距 + 在柱上标注数值 ---
     churn_by_contract = df.groupby("Contract")["Churn"].mean().sort_values(ascending=False)
 
-    plt.figure(figsize=(8, 5))  # 放大画布
+    plt.figure(figsize=(8, 5))  
     bars = plt.bar(churn_by_contract.index, churn_by_contract.values, color='#f67280')
 
-    # 让 x 标签倾斜并右对齐，防止被切掉
     plt.xticks(rotation=25, ha='right', fontsize=11)
     plt.ylabel("Churn Rate", fontsize=12)
     plt.title("Churn Rate by Contract Type", fontsize=14)
 
-    # 设置 y 轴上限让柱子与标题/轴标签有缓冲
     plt.ylim(0, max(churn_by_contract.values) * 1.15)
 
-    # 在每个柱子上添加数值标签（保留两位小数）
     for bar, val in zip(bars, churn_by_contract.values):
         height = bar.get_height()
-        plt.annotate(f"{val:.2%}",  # 百分比格式
+        plt.annotate(f"{val:.2%}", 
                      xy=(bar.get_x() + bar.get_width() / 2, height),
-                     xytext=(0, 4),  # 标签向上偏移一点
+                     xytext=(0, 4), 
                      textcoords="offset points",
                      ha="center", va="bottom", fontsize=11)
 
-    plt.tight_layout()  # 自动调整边距，通常能避免被切
-    # plt.savefig("churn_by_contract.png", bbox_inches="tight", dpi=150)  # 可选：保存图像
+    plt.tight_layout() 
+    # plt.savefig("churn_by_contract.png", bbox_inches="tight", dpi=150)
     plt.show()
 
     # ---------------------------
@@ -247,7 +243,7 @@ X_train, X_test, y_train, y_test, t_train, t_test, true_uplift_train, true_uplif
 
 
 # ============================================================
-# NEW SECTION: Custom X-Learner Implementation
+# Custom X-Learner Implementation
 # ============================================================
 class XLearner(BaseEstimator, RegressorMixin):
     def __init__(self, model_class=xgb.XGBRegressor, params=None):
@@ -322,9 +318,9 @@ uplift_t = p0_test - p1_test
 # 4. X-Learner (Class Implementation) & Interpretation
 # ---------------------------
 
-# A. 定义参数 (沿用之前的 XGBoost 参数，改为回归任务)
+# A. Define parameters (using the previous XGBoost parameters, but changed to a regression task).
 params_x = {
-    "objective": "reg:squarederror",  # 注意：第二阶段是回归任务
+    "objective": "reg:squarederror", 
     "max_depth": 3,
     "learning_rate": 0.05,
     "n_estimators": 100,
@@ -332,36 +328,27 @@ params_x = {
     "random_state": 42
 }
 
-# B. 训练 X-Learner (使用我们刚才定义的类)
+# B. Training the X-Learner (using the class we just defined)
 print("Training X-Learner (Class-based)...")
-# 初始化模型
 xl = XLearner(model_class=xgb.XGBRegressor, params=params_x)
-# 训练
 xl.fit(X_train, y_train, t_train)
-# 预测 Uplift Score (这一步替换了原来手算的 uplift_x)
 uplift_x = xl.predict(X_test)
 
 
-# C. SHAP 可解释性分析 (New Feature for DS)
+# C. New Feature for DS
 def plot_shap_for_uplift(model, X_sample):
     print("\n" + "=" * 50)
     print("Interpretability: SHAP Values for Uplift Drivers")
     print("=" * 50)
-
-    # 我们解释 model_tau1 (处理组的CATE模型)
-    # 这张图回答：在 Treatment 组中，哪些特征最能驱动 Uplift？
+    
     explainer = shap.TreeExplainer(model.model_tau1)
     shap_values = explainer.shap_values(X_sample)
 
     plt.figure()
     plt.title("Key Drivers of Uplift (SHAP Summary)")
-    # show=False 允许我们继续调整 plt 设置
     shap.summary_plot(shap_values, X_sample, show=False)
     plt.show()
 
-
-# 为了运行速度，我们只取 500 个样本做 SHAP 分析
-# 注意：确保这里 X_test 是 DataFrame 格式
 plot_shap_for_uplift(xl, X_test.sample(500, random_state=42))
 
 print("X-Learner training and interpretation complete.")
@@ -569,3 +556,4 @@ def plot_profit_curve(uplift_scores, y_true, t_true,
 
 # Run Profit Analysis
 plot_profit_curve(uplift_x, y_test, t_test, value_per_retain=60, cost_per_treat=5)
+
