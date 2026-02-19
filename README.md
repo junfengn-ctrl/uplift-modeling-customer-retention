@@ -5,29 +5,33 @@
 ![Status](https://img.shields.io/badge/Status-Completed-success)
 
 ## 📖 Executive Summary
-This project implements a **Heterogeneous Treatment Effect (HTE)** framework to optimize customer retention strategies. By simulating a Randomized Controlled Trial (RCT) environment, I developed an **X-Learner** meta-algorithm from scratch to identify "Persuadable" customers—those who are most likely to be retained *only if* they receive a treatment (e.g., a discount).
 
-Unlike traditional churn prediction (which targets high-risk users regardless of intervention effect), this Uplift Model focuses on **incremental ROI**, achieving a **$10k+ expected profit increase** per 7,000 users compared to random targeting.
+This project develops an end-to-end causal uplift modeling pipeline to optimize customer retention strategies.
+
+Unlike traditional churn prediction models that estimate churn probability, uplift modeling focuses on estimating the **incremental treatment effect (CATE)** — identifying customers who are likely to respond positively to an intervention (e.g., discount offers).
+
+Using a simulated Randomized Controlled Trial (RCT) framework, I implemented both **T-Learner** and **X-Learner** meta-algorithms with XGBoost as the base learner. The X-Learner demonstrates superior ranking performance (Spearman = 0.87) and higher AUUC/Qini scores, leading to significant profit improvement under realistic treatment cost assumptions.
+
 
 ## 📊 Key Results & Visualizations
 
-### 1. Business Impact: Profit Curve (The "Money" Shot)
+### 1. Business Impact: Profit Curve 
 The model identifies the optimal targeting threshold. By targeting the top **59%** of users based on Uplift Score, we maximize expected profit to **~$10k** (per 7k users), avoiding waste on users who would stay anyway or leave regardless of the offer.
 ![Profit Curve](images/profit_curve.png)
 
-### 2. Model Interpretability: SHAP Analysis (The "Why")
+### 2. Model Interpretability: SHAP Analysis
 Using SHAP values to interpret the CATE (Conditional Average Treatment Effect), we discovered that **Month-to-month contract** users with high tenure are the most responsive segment. This confirms our hypothesis that long-term users on flexible contracts are the most "Persuadable."
 ![SHAP Summary](images/shap_summary.png)
 
-### 3. Model Performance: Qini Curve (The "Proof")
+### 3. Model Performance: Qini Curve
 The X-Learner (Pink line) significantly outperforms the T-Learner (Baseline) and Random selection. The Area Under Uplift Curve (AUUC) is **0.68**, indicating strong ranking ability.
 ![Qini Curve](images/qini_curve.png)
 
-### 4. Model Reliability: Calibration Plot (The "Trust")
+### 4. Model Reliability: Calibration Plot
 The model is well-calibrated. Users predicted to have high uplift (Decile 1) actually showed the highest true uplift in the validation set, proving the model's reliability for real-world deployment.
 ![Calibration Plot](images/calibration_plot.png)
 
-### 5. Data Context: Churn by Contract (The "Context")
+### 5. Data Context: Churn by Contract
 EDA reveals that Month-to-month users have a significantly higher baseline churn rate, making them the primary target pool for retention experiments.
 ![Churn EDA](images/churn_by_contract.png)
 
@@ -42,10 +46,19 @@ EDA reveals that Month-to-month users have a significantly higher baseline churn
 * **Simulation**: Generated synthetic ground-truth uplift labels to validate model accuracy (Spearman Correlation: **0.87**).
 
 ### Code Structure
-The `XLearner` class is implemented with a Scikit-Learn compatible API:
+
+The `XLearner` class is implemented with a Scikit-Learn compatible API to ensure modularity and reusability:
+
 ```python
 class XLearner(BaseEstimator, RegressorMixin):
     def fit(self, X, y, t):
-        # Stage 1: Base Outcome Models (Control vs Treatment)
-        # Stage 2: Pseudo-Outcome Regression (Estimating CATE)
-        ...
+        """
+        Stage 1:
+            Train separate outcome models:
+                μ0(x) = E[Y | X, T=0]
+                μ1(x) = E[Y | X, T=1]
+
+        Stage 2:
+            Construct pseudo-outcomes and regress them to estimate:
+                τ(x) = E[Y(1) - Y(0) | X]
+        """
