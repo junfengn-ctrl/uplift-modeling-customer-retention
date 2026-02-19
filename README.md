@@ -30,6 +30,7 @@ The model is well-calibrated. Users predicted to have high uplift (Decile 1) act
 ### 5. Data Context: Churn by Contract (The "Context")
 EDA reveals that Month-to-month users have a significantly higher baseline churn rate, making them the primary target pool for retention experiments.
 ![Churn EDA](images/churn_by_contract.png)
+
 ---
 
 ## 🛠️ Technical Implementation
